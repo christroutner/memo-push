@@ -2,11 +2,17 @@
   "name": "memo-push",
   "version": "1.0.0",
   "description": "Publish IPFS hashes to the BCH blockchain using the memo.cash protocol",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo no tests",
+    "test": "nyc mocha --forbid-only \"test/**/*.test.js\"",
     "start": "node index.js",
     "semantic-release": "semantic-release"
+  },
+  "bin": {
+    "memo-push": "./bin/run"
+  },
+  "bugs": {
+    "url": "https://github.com/christroutner/memo-push/issues"
   },
   "repository": {
     "type": "git",
@@ -23,12 +29,27 @@
   ],
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/christroutner/memo-push/issues"
-  },
   "homepage": "https://github.com/christroutner/memo-push#readme",
   "dependencies": {
     "bitbox-sdk": "^5.1.1",
-    "semantic-release": "^15.13.12"
+    "semantic-release": "^15.13.12",
+    "@oclif/command": "^1.5.13",
+    "@oclif/config": "^1.12.12",
+    "@oclif/plugin-help": "^2.1.6"
+  },
+  "devDependencies": {
+    "@oclif/test": "^1.2.4",
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-oclif": "^3.1.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0"
+  },
+  "files": [
+    "/bin",
+    "/src"
+  ],
+  "oclif": {
+    "bin": "memo-push"
   }
 }
