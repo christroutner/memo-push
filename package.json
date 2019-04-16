@@ -1,0 +1,28 @@
+{
+  "name": "memo-push",
+  "version": "1.0.0",
+  "description": "Publish IPFS hashes to the BCH blockchain using the memo.cash protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo no tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/christroutner/memo-push.git"
+  },
+  "keywords": [
+    "ipfs",
+    "javascript",
+    "node.js",
+    "bch",
+    "bitcoin",
+    "cash",
+    "memo.cash"
+  ],
+  "author": "Chris Troutner <chris.troutner@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/christroutner/memo-push/issues"
+  },
+  "homepage": "https://github.com/christroutner/memo-push#readme"
+}
