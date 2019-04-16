@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo no tests",
-    "start": "node index.js"
+    "start": "node index.js",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/christroutner/memo-push/issues"
   },
-  "homepage": "https://github.com/christroutner/memo-push#readme"
+  "homepage": "https://github.com/christroutner/memo-push#readme",
+  "dependencies": {
+    "semantic-release": "^15.13.3"
+  }
 }
