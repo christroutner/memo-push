@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/christroutner/memo-push#readme",
   "dependencies": {
-    "semantic-release": "^15.13.3"
+    "bitbox-sdk": "^5.1.1",
+    "semantic-release": "^15.13.12"
   }
 }
