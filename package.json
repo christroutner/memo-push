@@ -4,7 +4,8 @@
   "description": "Publish IPFS hashes to the BCH blockchain using the memo.cash protocol",
   "main": "index.js",
   "scripts": {
-    "test": "echo no tests"
+    "test": "echo no tests",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
