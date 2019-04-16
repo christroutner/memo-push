@@ -18,9 +18,8 @@ if (!WIF || WIF === "") {
   return;
 }
 
-async function memoPush(argv) {
+async function memoPush() {
   try {
-    console.log(`argv: ${util.inspect(argv)}`)
 
     // Create an EC Key Pair from the user-supplied WIF.
     const ecPair = BITBOX.ECPair.fromWIF(SEND_WIF)
