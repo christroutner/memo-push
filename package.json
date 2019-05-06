@@ -31,7 +31,7 @@
   "license": "MIT",
   "homepage": "https://github.com/christroutner/memo-push#readme",
   "dependencies": {
-    "bitbox-sdk": "^5.1.1",
+    "bitbox-sdk": "^6.1.1",
     "semantic-release": "^15.13.12",
     "@oclif/command": "^1.5.13",
     "@oclif/config": "^1.12.12",
