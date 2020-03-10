@@ -1,7 +1,10 @@
 const { Command, flags } = require("@oclif/command")
 
-const BITBOXSDK = require("bitbox-sdk")
-const BITBOX = new BITBOXSDK()
+// const BITBOXSDK = require("bitbox-sdk")
+// const BITBOX = new BITBOXSDK()
+
+const BCHJS = require("@chris.troutner/bch-js")
+const bchjs = new BCHJS()
 
 // Used for debugging and iterrogating JS objects.
 const util = require("util")
@@ -9,7 +12,17 @@ util.inspect.defaultOptions = { depth: 1 }
 
 const WIF = process.env.WIF
 
+let _this
+
 class MemoPushCommand extends Command {
+  constructor(argv, config) {
+    super(argv, config)
+
+    _this = this
+
+    this.bchjs = bchjs
+  }
+
   async run() {
     const { flags } = this.parse(MemoPushCommand)
 
@@ -26,18 +39,18 @@ class MemoPushCommand extends Command {
         }
 
         // Create an EC Key Pair from the user-supplied WIF.
-        const ecPair = BITBOX.ECPair.fromWIF(WIF)
+        const ecPair = _this.bchjs.ECPair.fromWIF(WIF)
 
         // Generate the public address that corresponds to this WIF.
-        const ADDR = BITBOX.ECPair.toCashAddress(ecPair)
+        const ADDR = _this.bchjs.ECPair.toCashAddress(ecPair)
         console.log(`Publishing ${hash} to ${ADDR}`)
 
         // Pick a UTXO controlled by this address.
-        const u = await BITBOX.Address.utxo(ADDR)
-        const utxo = findBiggestUtxo(u.utxos)
+        const u = await _this.bchjs.Blockbook.utxo(ADDR)
+        const utxo = findBiggestUtxo(u)
 
         // instance of transaction builder
-        const transactionBuilder = new BITBOX.TransactionBuilder()
+        const transactionBuilder = new _this.bchjs.TransactionBuilder()
 
         //const satoshisToSend = SATOSHIS_TO_SEND
         const originalAmount = utxo.satoshis
@@ -55,13 +68,13 @@ class MemoPushCommand extends Command {
 
         // Add the memo.cash OP_RETURN to the transaction.
         const script = [
-          BITBOX.Script.opcodes.OP_RETURN,
+          _this.bchjs.Script.opcodes.OP_RETURN,
           Buffer.from("6d02", "hex"),
-          Buffer.from(`IPFS UPDATE ${hash}`)
+          Buffer.from(`TEST ${hash}`)
         ]
 
         //console.log(`script: ${util.inspect(script)}`);
-        const data = BITBOX.Script.encode(script)
+        const data = _this.bchjs.Script.encode(script)
         //console.log(`data: ${util.inspect(data)}`);
         transactionBuilder.addOutput(data, 0)
 
@@ -83,7 +96,9 @@ class MemoPushCommand extends Command {
         //console.log(` `);
 
         // Broadcast transation to the network
-        const txidStr = await BITBOX.RawTransactions.sendRawTransaction(hex)
+        const txidStr = await _this.bchjs.RawTransactions.sendRawTransaction(
+          hex
+        )
         console.log(`Transaction ID: ${txidStr}`)
         console.log(`https://memo.cash/post/${txidStr}`)
         console.log(`https://explorer.bitcoin.com/bch/tx/${txidStr}`)
