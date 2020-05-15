@@ -38,7 +38,7 @@
     "bitbox-sdk": "^5.1.1"
   },
   "devDependencies": {
-    "@oclif/test": "^1.2.4",
+    "@oclif/test": "^1.2.6",
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-config-oclif": "^3.1.0",
