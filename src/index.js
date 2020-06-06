@@ -70,7 +70,7 @@ class MemoPushCommand extends Command {
         const script = [
           _this.bchjs.Script.opcodes.OP_RETURN,
           Buffer.from("6d02", "hex"),
-          Buffer.from(`TEST ${hash}`)
+          Buffer.from(`IPFS UPDATE ${hash}`)
         ]
 
         //console.log(`script: ${util.inspect(script)}`);
