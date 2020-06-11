@@ -47,7 +47,10 @@ class MemoPushCommand extends Command {
         const ADDR = _this.bchjs.ECPair.toCashAddress(ecPair)
         console.log(`Publishing ${hash} to ${ADDR}`)
 
-        const txidStr = await this.publish(hash, WIF)
+        // Prefact text to put in front of the message.
+        const preface = "IPFS UPDATE"
+
+        const txidStr = await this.publish(hash, WIF, preface)
 
         console.log(`Transaction ID: ${txidStr}`)
         console.log(`https://memo.cash/post/${txidStr}`)
@@ -61,7 +64,9 @@ class MemoPushCommand extends Command {
   }
 
   // Publish an IPFS hash to the blockchain. Pay for the TX with the WIF.
-  async publish(hash, wif) {
+  // Optional preface text will replace the default 'IPFS UPDATE' used to
+  // signal updates for the ipfs-web-server.
+  async publish(hash, wif, preface) {
     try {
       // Create an EC Key Pair from the user-supplied WIF.
       const ecPair = _this.bchjs.ECPair.fromWIF(wif)
@@ -91,11 +96,15 @@ class MemoPushCommand extends Command {
       // Send the same amount - fee.
       transactionBuilder.addOutput(ADDR, originalAmount - fee - PSF_DONATION)
 
+      // Default preface, or override if user specified.
+      let prefaceStr = "IPFS UPDATE"
+      if (preface) prefaceStr = preface
+
       // Add the memo.cash OP_RETURN to the transaction.
       const script = [
         _this.bchjs.Script.opcodes.OP_RETURN,
         Buffer.from("6d02", "hex"),
-        Buffer.from(`IPFS UPDATE ${hash}`)
+        Buffer.from(`${prefaceStr} ${hash}`)
       ]
 
       //console.log(`script: ${util.inspect(script)}`);
