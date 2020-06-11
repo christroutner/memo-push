@@ -1,10 +1,12 @@
 const { Command, flags } = require("@oclif/command")
 
-// const BITBOXSDK = require("bitbox-sdk")
-// const BITBOX = new BITBOXSDK()
-
 const BCHJS = require("@chris.troutner/bch-js")
 const bchjs = new BCHJS()
+
+// Send the Permissionless Software Foundation a donation to thank them for creating
+// and maintaining this software.
+const PSF_DONATION = 2000
+const bchDonation = require("bch-donation")
 
 // Used for debugging and iterrogating JS objects.
 const util = require("util")
@@ -64,7 +66,7 @@ class MemoPushCommand extends Command {
         const fee = 500
 
         // Send the same amount - fee.
-        transactionBuilder.addOutput(ADDR, originalAmount - fee)
+        transactionBuilder.addOutput(ADDR, originalAmount - fee - PSF_DONATION)
 
         // Add the memo.cash OP_RETURN to the transaction.
         const script = [
@@ -77,6 +79,9 @@ class MemoPushCommand extends Command {
         const data = _this.bchjs.Script.encode(script)
         //console.log(`data: ${util.inspect(data)}`);
         transactionBuilder.addOutput(data, 0)
+
+        // Send a 2000 sat donation to PSF for creating and maintaining this software.
+        transactionBuilder.addOutput(bchDonation("psf").donations, PSF_DONATION)
 
         // Sign the transaction with the HD node.
         let redeemScript
@@ -92,7 +97,7 @@ class MemoPushCommand extends Command {
         const tx = transactionBuilder.build()
         // output rawhex
         const hex = tx.toHex()
-        //console.log(`TX hex: ${hex}`);
+        // console.log(`TX hex: ${hex}`)
         //console.log(` `);
 
         // Broadcast transation to the network
