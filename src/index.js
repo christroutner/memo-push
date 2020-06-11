@@ -1,10 +1,12 @@
 const { Command, flags } = require("@oclif/command")
 
-// const BITBOXSDK = require("bitbox-sdk")
-// const BITBOX = new BITBOXSDK()
-
 const BCHJS = require("@chris.troutner/bch-js")
 const bchjs = new BCHJS()
+
+// Send the Permissionless Software Foundation a donation to thank them for creating
+// and maintaining this software.
+const PSF_DONATION = 2000
+const bchDonation = require("bch-donation")
 
 // Used for debugging and iterrogating JS objects.
 const util = require("util")
@@ -45,60 +47,8 @@ class MemoPushCommand extends Command {
         const ADDR = _this.bchjs.ECPair.toCashAddress(ecPair)
         console.log(`Publishing ${hash} to ${ADDR}`)
 
-        // Pick a UTXO controlled by this address.
-        const u = await _this.bchjs.Blockbook.utxo(ADDR)
-        const utxo = findBiggestUtxo(u)
+        const txidStr = await this.publish(hash, WIF)
 
-        // instance of transaction builder
-        const transactionBuilder = new _this.bchjs.TransactionBuilder()
-
-        //const satoshisToSend = SATOSHIS_TO_SEND
-        const originalAmount = utxo.satoshis
-        const vout = utxo.vout
-        const txid = utxo.txid
-
-        // add input with txid and index of vout
-        transactionBuilder.addInput(txid, vout)
-
-        // TODO: Compute the 1 sat/byte fee.
-        const fee = 500
-
-        // Send the same amount - fee.
-        transactionBuilder.addOutput(ADDR, originalAmount - fee)
-
-        // Add the memo.cash OP_RETURN to the transaction.
-        const script = [
-          _this.bchjs.Script.opcodes.OP_RETURN,
-          Buffer.from("6d02", "hex"),
-          Buffer.from(`IPFS UPDATE ${hash}`)
-        ]
-
-        //console.log(`script: ${util.inspect(script)}`);
-        const data = _this.bchjs.Script.encode(script)
-        //console.log(`data: ${util.inspect(data)}`);
-        transactionBuilder.addOutput(data, 0)
-
-        // Sign the transaction with the HD node.
-        let redeemScript
-        transactionBuilder.sign(
-          0,
-          ecPair,
-          redeemScript,
-          transactionBuilder.hashTypes.SIGHASH_ALL,
-          originalAmount
-        )
-
-        // build tx
-        const tx = transactionBuilder.build()
-        // output rawhex
-        const hex = tx.toHex()
-        //console.log(`TX hex: ${hex}`);
-        //console.log(` `);
-
-        // Broadcast transation to the network
-        const txidStr = await _this.bchjs.RawTransactions.sendRawTransaction(
-          hex
-        )
         console.log(`Transaction ID: ${txidStr}`)
         console.log(`https://memo.cash/post/${txidStr}`)
         console.log(`https://explorer.bitcoin.com/bch/tx/${txidStr}`)
@@ -107,6 +57,79 @@ class MemoPushCommand extends Command {
       //this.log(`hello ${name} from ./src/index.js`)
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  // Publish an IPFS hash to the blockchain. Pay for the TX with the WIF.
+  async publish(hash, wif) {
+    try {
+      // Create an EC Key Pair from the user-supplied WIF.
+      const ecPair = _this.bchjs.ECPair.fromWIF(wif)
+
+      // Generate the public address that corresponds to this WIF.
+      const ADDR = _this.bchjs.ECPair.toCashAddress(ecPair)
+      // console.log(`Publishing ${hash} to ${ADDR}`)
+
+      // Pick a UTXO controlled by this address.
+      const u = await _this.bchjs.Blockbook.utxo(ADDR)
+      const utxo = findBiggestUtxo(u)
+
+      // instance of transaction builder
+      const transactionBuilder = new _this.bchjs.TransactionBuilder()
+
+      //const satoshisToSend = SATOSHIS_TO_SEND
+      const originalAmount = utxo.satoshis
+      const vout = utxo.vout
+      const txid = utxo.txid
+
+      // add input with txid and index of vout
+      transactionBuilder.addInput(txid, vout)
+
+      // TODO: Compute the 1 sat/byte fee.
+      const fee = 500
+
+      // Send the same amount - fee.
+      transactionBuilder.addOutput(ADDR, originalAmount - fee - PSF_DONATION)
+
+      // Add the memo.cash OP_RETURN to the transaction.
+      const script = [
+        _this.bchjs.Script.opcodes.OP_RETURN,
+        Buffer.from("6d02", "hex"),
+        Buffer.from(`IPFS UPDATE ${hash}`)
+      ]
+
+      //console.log(`script: ${util.inspect(script)}`);
+      const data = _this.bchjs.Script.encode2(script)
+      //console.log(`data: ${util.inspect(data)}`);
+      transactionBuilder.addOutput(data, 0)
+
+      // Send a 2000 sat donation to PSF for creating and maintaining this software.
+      transactionBuilder.addOutput(bchDonation("psf").donations, PSF_DONATION)
+
+      // Sign the transaction with the HD node.
+      let redeemScript
+      transactionBuilder.sign(
+        0,
+        ecPair,
+        redeemScript,
+        transactionBuilder.hashTypes.SIGHASH_ALL,
+        originalAmount
+      )
+
+      // build tx
+      const tx = transactionBuilder.build()
+      // output rawhex
+      const hex = tx.toHex()
+      // console.log(`TX hex: ${hex}`)
+      //console.log(` `);
+
+      // Broadcast transation to the network
+      const txidStr = await _this.bchjs.RawTransactions.sendRawTransaction(hex)
+
+      return txidStr
+    } catch (err) {
+      console.error(`Error in memo-push/publish()`)
+      throw err
     }
   }
 }
